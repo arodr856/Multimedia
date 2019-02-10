@@ -30,7 +30,10 @@ public class CS4551_Rodriguez{
                 case 2:
                     generateLUT(lookUpTable);
                     printLUT(lookUpTable);
-                    generateIndexFile(img, lookUpTable);
+                    MImage indexImg = generateIndexFile(img, lookUpTable);
+                    MImage qt8 = new MImage(indexImg.getW(), indexImg.getH());
+                    generateQT8Img(img.getName(), indexImg, qt8, lookUpTable);
+
                     break;
                 case 3:
                     System.out.println("Goodbye. . .");
@@ -133,7 +136,7 @@ public class CS4551_Rodriguez{
         }
     } /* printLUT */
 
-    public static void generateIndexFile(MImage mImg, HashMap<Integer, int[]> lut){
+    public static MImage generateIndexFile(MImage mImg, HashMap<Integer, int[]> lut){
         int height = mImg.getH();
         int width = mImg.getW();
 
@@ -157,6 +160,7 @@ public class CS4551_Rodriguez{
         }
 
         indexImg.write2PPM("ducky-index.ppm");
+        return indexImg;
     }   /* generateIndexFile */
 
     public static int findIndex(int[] rgb){
@@ -183,5 +187,21 @@ public class CS4551_Rodriguez{
         }
         return binary;
     } /* verifyBitCount */
+
+    public static void generateQT8Img(String fileName, MImage indexImg, MImage qt8, HashMap<Integer, int[]> lut){
+        for(int row = 0; row < indexImg.getH(); row++){
+            for(int col = 0; col < indexImg.getW(); col++){
+                int[] indexRGB = new int[3];
+                indexImg.getPixel(col, row, indexRGB);
+                int[] rgbValues = lut.get(indexRGB[0]);
+                for(int i = 0; i < 3; i++){
+                    qt8.setPixel(col, row, rgbValues);
+                }
+
+            }
+        }
+        String name = fileName.substring(0, fileName.indexOf("."));
+        qt8.write2PPM(name +"-QT8.ppm");
+    }
 
 } /* CS4551_Rodriguez */
