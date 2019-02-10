@@ -1,0 +1,8 @@
+*
+!.gitignore
+!homework
+!homework/**
+!homework/**/src
+!homework/**/src/*.java
+
+.DS_Store
