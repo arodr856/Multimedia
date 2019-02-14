@@ -128,10 +128,7 @@ public class ColorQuantization{
                 int[] indexRGB = new int[3];
                 indexImg.getPixel(col, row, indexRGB);
                 int[] rgbValues = lut.get(indexRGB[0]);
-                for(int i = 0; i < 3; i++){
-                    qt8.setPixel(col, row, rgbValues);
-                }
-
+                qt8.setPixel(col, row, rgbValues);
             }
         }
         String name = fileName.substring(0, fileName.indexOf("."));
