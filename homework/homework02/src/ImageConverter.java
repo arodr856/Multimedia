@@ -18,10 +18,30 @@ public class ImageConverter{
 
             switch(menuOption){
                 case 1:
-                    GrayScaleConverter.convertToGrayScale(this.image);
+                        
                     break;
                 case 2:
-                    ColorQuantization.generate8BitUCQ(this.image);
+                    DCTTransformation dctTrans = new DCTTransformation(this.image);
+
+                    /* encoding */
+                    dctTrans.resize();
+                    dctTrans.colorSpaceTransformation();
+                    dctTrans.subSampling();
+                    dctTrans.discreteCosineTransform();
+                    dctTrans.inverseDiscreteCosineTransform();
+                    dctTrans.quantization();
+                    dctTrans.printCb();
+                    // dctTrans.printSampledCb();
+                    /* encoding */
+
+                    /* decoding */
+                    dctTrans.dequantization();
+                    dctTrans.inverseDiscreteCosineTransform();
+                    dctTrans.superSampling();
+                    dctTrans.inverseColorSpaceTransformation();
+                    dctTrans.revertSize();
+                    
+                    /* decoding */
                     break;
                 case 3:
                     System.out.println("Goodbye. . .");
@@ -36,8 +56,8 @@ public class ImageConverter{
     public static void printMenu(){
 
         String  menu = "Main Menu----------------------------------\n" +
-                        "1. Conversion to Gray-scale image (24bits -> 8bits)\n" +
-                        "2. Conversion to 8bit indexed color image using uniform color quantization (24bits -> 8bits)\n" +
+                        "1. VQ (Vector Quantization)\n" +
+                        "2. DCT-based Coding\n" +
                         "3. Quit\n\n" +
                         "Please enter the task number [1 - 3]: ";
         System.out.print(menu);
