@@ -28,10 +28,7 @@ public class ImageConverter{
                     dctTrans.colorSpaceTransformation();
                     dctTrans.subSampling();
                     dctTrans.discreteCosineTransform();
-                    dctTrans.inverseDiscreteCosineTransform();
                     dctTrans.quantization();
-                    dctTrans.printCb();
-                    // dctTrans.printSampledCb();
                     /* encoding */
 
                     /* decoding */
@@ -40,8 +37,9 @@ public class ImageConverter{
                     dctTrans.superSampling();
                     dctTrans.inverseColorSpaceTransformation();
                     dctTrans.revertSize();
-                    
                     /* decoding */
+                    // dctTrans.printY();
+                    // dctTrans.printSampledCb();
                     break;
                 case 3:
                     System.out.println("Goodbye. . .");

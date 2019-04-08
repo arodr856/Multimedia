@@ -115,9 +115,12 @@ public class DCTTransformation{
                 yCbCr[1] = ((rgb[0] * -0.1687) + (rgb[1] * -0.3313) + (rgb[2] * 0.5) - 0.5);
                 yCbCr[2] = ((rgb[0] * 0.5) + (rgb[1] * -0.4187) + (rgb[2] * -0.0813) - 0.5);
                 this.transformed[row][col] = yCbCr;
-                this.y[row][col] = Math.round(yCbCr[0]);
-                this.cb[row][col] = Math.round(yCbCr[1]);
-                this.cr[row][col] = Math.round(yCbCr[2]);
+                this.y[row][col] = (int)Math.round(yCbCr[0]);
+                this.cb[row][col] = (int)Math.round(yCbCr[1]);
+                this.cr[row][col] = (int)Math.round(yCbCr[2]);
+                // this.y[row][col] = yCbCr[0];
+                // this.cb[row][col] = yCbCr[1];
+                // this.cr[row][col] = yCbCr[2];
             }
         }
     }
@@ -135,8 +138,8 @@ public class DCTTransformation{
                 double avgCrVal = 0.0;
                 for(int innerRow = row; innerRow < (row + 2); innerRow++){
                     for(int innerCol = col; innerCol < (col + 2); innerCol++){
-                        avgCbVal += this.cb[row][col];
-                        avgCrVal += this.cr[row][col];
+                        avgCbVal += this.cb[innerRow][innerCol];
+                        avgCrVal += this.cr[innerRow][innerCol];
                     } // end of innerCol for-loop
                 } // end of innerRow for-loop
                 avgCbVal /= 4;
@@ -155,33 +158,41 @@ public class DCTTransformation{
         for(int row = 0; row < this.y.length; row+= 8){
             for(int col = 0; col < this.y[row].length; col+= 8){
             
-                for(int v = 0, rowIndex = row; v < 8; rowIndex++, v++){
-                    for(int u = 0, colIndex = col; u < 8; colIndex++, u++){
+                for(int u = 0, dctRow = row; u < 8; dctRow++, u++){
+                    for(int v = 0, dctCol = col; v < 8; dctCol++, v++){
 
-                        double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
-                        double cv = (v == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
+                        double cu = 1.0; 
+                        double cv = 1.0;
+                        if(u == 0){
+                            cu = 1 / Math.sqrt(2);
+                        }
+                        if(v == 0){
+                            cv = 1.0 / Math.sqrt(2);
+                        }
+                        // double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
+                        // double cv = (v == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
                     
 						double sum = 0.0;
 
-                        for(int blockRow = row, x = 0; x < 8; x++, blockRow++){
-                            for(int blockCol = col, y = 0; y < 8; y++, blockCol++){
+                        for(int i = 0, yRow = row; i < 8; i++, yRow++){
+                            for(int j = 0, yCol = col; j < 8; j++, yCol++){
                                 // System.out.println("row: " + blockRow + " col: " + blockCol);
-                                double value = this.y[blockRow][blockCol];
                                 
-                                double calc1 = Math.cos(((2 * x + 1) * u * Math.PI) / 16);
-                                double calc2 = Math.cos(((2 * y + 1) * v * Math.PI) / 16);
-                                
+                                double calc1 = Math.cos(((2 * i + 1) * u * Math.PI) / 16);
+                                double calc2 = Math.cos(((2 * j + 1) * v * Math.PI) / 16);
+                                double value = this.y[yRow][yCol];
+
                                 sum += (value * calc1 * calc2);
                             }
                         }
 
-                        sum = (sum * cu * cv) / 4;
+                        sum *= ((cu * cv) / 4);
                         if(sum > Math.pow(2, 10)){
 							sum = Math.pow(2, 10);
 						}else if(sum < (-Math.pow(2, 10))){
 							sum = (-Math.pow(2,10));
                         }
-                        this.dctY[rowIndex][colIndex] = sum;
+                        this.dctY[dctRow][dctCol] = sum;
                     } // end of u-loop
                 } // end of v-loop
 
@@ -189,35 +200,44 @@ public class DCTTransformation{
             }
         }
 
-
         for(int row = 0; row < this.sampledCb.length; row+= 8){
             for(int col = 0; col < this.sampledCb[row].length; col+= 8){
             
+                for(int u = 0, dctRow = row; u < 8; dctRow++, u++){
+                    for(int v = 0, dctCol = col; v < 8; dctCol++, v++){
 
-                for(int v = 0, rowIndex = row; v < 8; rowIndex++, v++){
-                    for(int u = 0, colIndex = col; u < 8; colIndex++, u++){
-
-                        double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
-                        double cv = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
+                        double cu = 1.0; 
+                        double cv = 1.0;
+                        if(u == 0){
+                            cu = 1 / Math.sqrt(2);
+                        }
+                        if(v == 0){
+                            cv = 1.0 / Math.sqrt(2);
+                        }
+                        // double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
+                        // double cv = (v == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
                     
-                        double cbSum = 0.0;
+						double cbSum = 0.0;
                         double crSum = 0.0;
 
-                        for(int blockRow = row; blockRow < (row + 8) ; blockRow++){
-                            for(int blockCol = col; blockCol < (col + 8); blockCol++){
-                                double cbValue = this.sampledCb[blockRow][blockCol];
-                                double crValue = this.sampledCr[blockRow][blockCol];
+                        for(int i = 0, yRow = row; i < 8; i++, yRow++){
+                            for(int j = 0, yCol = col; j < 8; j++, yCol++){
+                                // System.out.println("row: " + blockRow + " col: " + blockCol);
                                 
-                                double calc1 = Math.cos(((2 * blockCol + 1) * u * Math.PI) / 16);
-                                double calc2 = Math.cos(((2 * blockRow + 1) * v * Math.PI) / 16);
-                                
-                                cbSum+= (cbValue * calc1 * calc2);
-                                crSum+= (crValue * calc1 * calc2);
+                                double calc1 = Math.cos(((2 * i + 1) * u * Math.PI) / 16);
+                                double calc2 = Math.cos(((2 * j + 1) * v * Math.PI) / 16);
+                                // double value = this.y[yRow][yCol];
+                                double cbValue = this.sampledCb[yRow][yCol];
+                                double crValue = this.sampledCr[yRow][yCol];
+
+                                // sum += (value * calc1 * calc2);
+                                cbSum += (cbValue * calc1 * calc2);
+                                crSum += (crValue * calc1 * calc2);
                             }
                         }
 
-                        cbSum = (cbSum * cu * cv) / 4;
-                        crSum = (crSum * cu * cv) / 4;
+                        cbSum *= ((cu * cv) / 4);
+                        crSum *= ((cu * cv) / 4);
 
                         if(cbSum > Math.pow(2, 10)){
 							cbSum = Math.pow(2, 10);
@@ -230,16 +250,15 @@ public class DCTTransformation{
 						}else if(crSum < (-Math.pow(2, 10))){
 							crSum = (-Math.pow(2,10));
                         }
-                        this.dctCb[rowIndex][colIndex] = cbSum;
-                        this.dctCr[rowIndex][colIndex] = crSum;
-
-                    }
-                }
+                        // this.dctY[dctRow][dctCol] = sum;
+                        this.dctCb[dctRow][dctCol] = cbSum;
+                        this.dctCr[dctRow][dctCol] = crSum;
+                    } // end of u-loop
+                } // end of v-loop
 
 
             }
         }
-        
 
     }
 
@@ -332,67 +351,65 @@ public class DCTTransformation{
         for(int row = 0; row < this.dctY.length; row+=8){
             for(int col = 0; col < this.dctY[row].length; col+=8){
 
-                for(int x = 0, rIndex = row; x < 8; rIndex++, x++){
-                    for(int y = 0, cIndex = col; y < 8; cIndex++, y++){
+                for(int i = 0, yRow = row; i < 8; yRow++, i++){
+                    for(int j = 0, yCol = col; j < 8; yCol++, j++){
 
                         double sum = 0.0;
 
-                        for(int v = 0, r = row; v < 8; r++, v++){
-                            for(int u = 0, c = col; u < 8; c++, u++){
+                        for(int u = 0, dctRow = row; u < 8; dctRow++, u++){
+                            for(int v = 0, dctCol = col; v < 8; dctCol++, v++){
                                 double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
                                 double cv = (v == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
-                                double newY = this.dctY[r][c];
 
-                                double calc1 = Math.cos((2 * x + 1) * v * Math.PI / 16);
-                                double calc2 = Math.cos((2 * y + 1) * u * Math.PI / 16);
-                                
-                                sum += cu * cv * newY  * calc1 * calc2;
+                                double calc1 = Math.cos((2 * i + 1) * u * Math.PI / 16);
+                                double calc2 = Math.cos((2 * j + 1) * v * Math.PI / 16);
+                                double dctVal = this.dctY[dctRow][dctCol];
+                                sum += (cu * cv * calc1 * calc2 * dctVal);
                             }
                         }
 
                         sum /= 4;
-                        this.y[rIndex][cIndex] = sum;
+                        this.y[yRow][yCol] = sum;
                     }
                 }
             }
         }
 
+        for(int row = 0; row < this.sampledCb.length; row+=8){
+            for(int col = 0; col < this.sampledCb[row].length; col+=8){
 
-        for(int row = 0; row < this.dctCb.length; row+=8){
-            for(int col = 0; col < this.dctCb[row].length; col+=8){
+                for(int i = 0, yRow = row; i < 8; yRow++, i++){
+                    for(int j = 0, yCol = col; j < 8; yCol++, j++){
 
-                for(int x = 0, rIndex = row; x < 8; rIndex++, x++){
-                    for(int y = 0, cIndex = col; y < 8; cIndex++, y++){
-
+                        // double sum = 0.0;
                         double cbSum = 0.0;
                         double crSum = 0.0;
 
-                        for(int v = 0, r = row; v < 8; r++, v++){
-                            for(int u = 0, c = col; u < 8; c++, u++){
-                                
+                        for(int u = 0, dctRow = row; u < 8; dctRow++, u++){
+                            for(int v = 0, dctCol = col; v < 8; dctCol++, v++){
                                 double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
                                 double cv = (v == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
 
-                                double cb = this.dctCb[r][c];
-                                double cr = this.dctCr[row][c];
+                                double calc1 = Math.cos(((2 * i + 1) * u * Math.PI )/ 16);
+                                double calc2 = Math.cos(((2 * j + 1) * v * Math.PI) / 16);
 
-                                double calc1 = Math.cos((2 * x + 1) * v * Math.PI / 16);
-                                double calc2 = Math.cos((2 * y + 1) * u * Math.PI / 16);
-
-                                cbSum += cu * cv * cb  * calc1 * calc2;
-                                crSum += cu * cv * cr  * calc1 * calc2;
-                                
+                                // double dctVal = this.dctY[dctRow][dctCol];
+                                double dctCb = this.dctCb[dctRow][dctCol];
+                                double dctCr = this.dctCr[dctRow][dctCol];
+                                // sum += (cu * cv * calc1 * calc2 * dctVal);
+                                cbSum += (cu * cv * dctCb  * calc1 * calc2);
+                                crSum += (cu * cv * dctCr  * calc1 * calc2);
                             }
                         }
 
+                        // sum /= 4;
                         cbSum /= 4;
                         crSum /= 4;
-                        this.sampledCb[rIndex][cIndex] = cbSum;
-                        this.sampledCr[rIndex][cIndex] = crSum;
-
+                        // this.y[yRow][yCol] = sum;
+                        this.sampledCb[yRow][yCol] = cbSum;
+                        this.sampledCr[yRow][yCol] = crSum;
                     }
                 }
-
             }
         }
 
@@ -411,6 +428,8 @@ public class DCTTransformation{
                     for(int x = col; x < (col + 2); x++){
                         this.cb[row][col] = avgcb;
                         this.cr[row][col] = avgcr;
+                        // this.cb[y][x] = avgcb;
+                        // this.cr[y][x] = avgcr;
                     }
                 }
 
@@ -453,7 +472,7 @@ public class DCTTransformation{
             }
         }
 
-        this.copy.write2PPM("dcttest.ppm");
+        this.copy.write2PPM("duckytest.ppm");
     }
 
     /* DECODING STEPS */
