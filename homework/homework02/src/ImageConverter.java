@@ -21,8 +21,10 @@ public class ImageConverter{
                         
                     break;
                 case 2:
-                    DCTTransformation dctTrans = new DCTTransformation(this.image);
-
+                    System.out.print("Enter the compression level: ");
+                    int compression = scanner.nextInt();
+                    
+                    DCTTransformation dctTrans = new DCTTransformation(this.image, compression);
                     /* encoding */
                     dctTrans.resize();
                     dctTrans.colorSpaceTransformation();
@@ -38,8 +40,6 @@ public class ImageConverter{
                     dctTrans.inverseColorSpaceTransformation();
                     dctTrans.revertSize();
                     /* decoding */
-                    // dctTrans.printY();
-                    // dctTrans.printSampledCb();
                     break;
                 case 3:
                     System.out.println("Goodbye. . .");

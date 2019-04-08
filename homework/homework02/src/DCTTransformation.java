@@ -1,6 +1,8 @@
-import java.time.Year;
 
 public class DCTTransformation{
+
+    private int compressionLevel;
+    private String name;
 
     private MImage copy;
     private MImage resized;
@@ -43,7 +45,9 @@ public class DCTTransformation{
         {32, 32, 32, 32, 32, 32, 32, 32}
     };
 
-    public DCTTransformation(MImage original){
+    public DCTTransformation(MImage original, int compressionLevel){
+        this.compressionLevel = compressionLevel;
+        this.name = original.getName();
         this.copy = deepCopy(original);
         this.resized = null;
         this.transformed = null;
@@ -64,7 +68,6 @@ public class DCTTransformation{
 
     private MImage deepCopy(MImage original){
         MImage copy = new MImage(original.getW(), original.getH());
-
         for(int row = 0; row < original.getH(); row++){
             for(int col = 0; col < original.getW(); col++){
                 int[] rgb = new int[3];
@@ -274,7 +277,7 @@ public class DCTTransformation{
                     for(int x = 0, colIndex = col; x < 8; colIndex++, x++){
                         double value = this.dctY[rowIndex][colIndex];
                         
-                        double quantizedValue =  Math.round(value / (this.tableY[y][x] * Math.pow(2, 1)));
+                        double quantizedValue =  Math.round(value / (this.tableY[y][x] * Math.pow(2, this.compressionLevel)));
                         this.quantizedY[rowIndex][colIndex] = quantizedValue;
                     }
                 }
@@ -290,8 +293,8 @@ public class DCTTransformation{
                         double cbVal = this.dctCb[indexRow][indexCol];
                         double crVal = this.dctCr[indexRow][indexCol];
 
-                        double newcb = Math.round(cbVal / (tableCbCr[y][x] * Math.pow(2, 1)));
-						double newcr = Math.round(crVal / (tableCbCr[y][x] * Math.pow(2, 1)));
+                        double newcb = Math.round(cbVal / (tableCbCr[y][x] * Math.pow(2, this.compressionLevel)));
+						double newcr = Math.round(crVal / (tableCbCr[y][x] * Math.pow(2, this.compressionLevel)));
                         this.quantizedCb[indexRow][indexCol] = newcb;
                         this.quantizedCr[indexRow][indexCol] = newcr;
 
@@ -316,7 +319,7 @@ public class DCTTransformation{
                     for(int x = 0, indexCol = col; x < 8; indexCol++, x++){
                         double yVal = this.quantizedY[indexRow][indexCol];
 
-                        double newYVal = yVal * (this.tableY[y][x] * Math.pow(2, 1));
+                        double newYVal = yVal * (this.tableY[y][x] * Math.pow(2, this.compressionLevel));
                         this.dctY[indexRow][indexCol] = newYVal;
                     }
                 }
@@ -333,8 +336,8 @@ public class DCTTransformation{
                         double cbVal = this.quantizedCb[indexRow][indexCol];
                         double crVal = this.quantizedCr[indexRow][indexCol];
 
-                        double newCb = cbVal * (this.tableCbCr[y][x] * Math.pow(2, 1));
-                        double newCr = crVal * (this.tableCbCr[y][x] * Math.pow(2, 1));
+                        double newCb = cbVal * (this.tableCbCr[y][x] * Math.pow(2, this.compressionLevel));
+                        double newCr = crVal * (this.tableCbCr[y][x] * Math.pow(2, this.compressionLevel));
 
                         this.dctCb[indexRow][indexCol] = newCb;
                         this.dctCr[indexRow][indexCol] = newCr;
@@ -471,8 +474,9 @@ public class DCTTransformation{
                 this.copy.setPixel(col, row, rgb);
             }
         }
-
-        this.copy.write2PPM("duckytest.ppm");
+        System.out.println(this.name.substring(0, this.name.indexOf(".")));
+        String fileName = this.name.substring(0, this.name.indexOf(".")) + "_" + this.compressionLevel + ".ppm";
+        this.copy.write2PPM(fileName);
     }
 
     /* DECODING STEPS */
