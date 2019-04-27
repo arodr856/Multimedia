@@ -209,16 +209,16 @@ public class DCTTransformation{
                 for(int u = 0, dctRow = row; u < 8; dctRow++, u++){
                     for(int v = 0, dctCol = col; v < 8; dctCol++, v++){
 
-                        double cu = 1.0; 
-                        double cv = 1.0;
-                        if(u == 0){
-                            cu = 1 / Math.sqrt(2);
-                        }
-                        if(v == 0){
-                            cv = 1.0 / Math.sqrt(2);
-                        }
-                        // double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
-                        // double cv = (v == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
+                        // double cu = 1.0; 
+                        // double cv = 1.0;
+                        // if(u == 0){
+                        //     cu = 1 / Math.sqrt(2);
+                        // }
+                        // if(v == 0){
+                        //     cv = 1.0 / Math.sqrt(2);
+                        // }
+                        double cu = (u == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
+                        double cv = (v == 0) ? (1.0 / Math.sqrt(2)) : 1.0;
                     
 						double cbSum = 0.0;
                         double crSum = 0.0;

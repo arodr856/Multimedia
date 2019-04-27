@@ -18,7 +18,10 @@ public class ImageConverter{
 
             switch(menuOption){
                 case 1:
-                        
+                    VectorQuantization vq = new VectorQuantization(this.image);
+                    // vq.generateInputVectors();
+                    // vq.printInputVectors();
+                    vq.run();
                     break;
                 case 2:
                     System.out.print("Enter the compression level: ");
