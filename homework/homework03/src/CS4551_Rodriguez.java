@@ -2,9 +2,9 @@
 public class CS4551_Rodriguez{
     public static void main(String[] args){
         
-        BlockMotionCompensation bmc = new BlockMotionCompensation();
+        Menu menu = new Menu();
 
-        bmc.run();
+        menu.run();
         
     }
 

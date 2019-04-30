@@ -1,20 +1,17 @@
 import java.util.Scanner;
 
 
-public class BlockMotionCompensation{
+public class Menu{
 
-    final String MENU = "Main Menu--------------------------\n" +
+    private final String MENU = "Main Menu--------------------------\n" +
                                 "1. Block-Based Motion Compensation\n" +
                                 "2. Removing Moving Objects\n" + 
                                 "3. Quit\n\n" +
                                 "Please enter the task number [1-3]: ";
-
-    public BlockMotionCompensation(){
-
-    }
+    private final Scanner scanner = new Scanner(System.in);
 
     public void run(){
-        Scanner scanner = new Scanner(System.in);
+
         int task = 0; 
         do{
             
@@ -28,14 +25,16 @@ public class BlockMotionCompensation{
         scanner.close();
     }
 
-    public void printMenu(){
+    private void printMenu(){
         System.out.print(MENU);
     }
 
-    public void handleSelectedTask(int task){
+    private void handleSelectedTask(int task){
         switch(task){
             case 1:
-            
+                int[] args = getArgs();
+                BlockMotionCompensation bmc = new BlockMotionCompensation(args);
+                bmc.motionCompensation();
                 break; 
             case 2:
 
@@ -46,6 +45,24 @@ public class BlockMotionCompensation{
             default:
                 System.out.println("Task number does not exist. Try again.\n");
         }
+    }
+
+    private int[] getArgs(){
+        int[] args = new int[4];
+
+        System.out.print("Enter n: ");
+        args[0] = scanner.nextInt();
+        
+        System.out.print("Enter p: ");
+        args[1] = scanner.nextInt();
+
+        System.out.print("Enter number for reference image: ");
+        args[2] = scanner.nextInt();
+
+        System.out.print("Enter number for target image: ");
+        args[3] = scanner.nextInt();
+
+        return args;
     }
 
 }
