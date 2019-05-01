@@ -11,6 +11,9 @@ public class BlockMotionCompensation{
 
     private int macroBlockRows;
     private int macroBlockCols;
+
+    private int min = Integer.MAX_VALUE;
+    private int max = Integer.MIN_VALUE;
     
 
     private MacroBlock[][] macroBlocks;
@@ -19,7 +22,7 @@ public class BlockMotionCompensation{
     // FRAMES_DIRECTORY directory should be in the same directory as the java files
     // example: /root folder -- \FRAMES_DIRECTORY
     //                           \ *.java files 
-    private final String FRAMES_DIRECTORY = "VideoFrames"; 
+    private final String FRAMES_DIRECTORY = "IDB"; 
 
     public BlockMotionCompensation(int n, int p, int ref, int target) {
         
@@ -62,6 +65,8 @@ public class BlockMotionCompensation{
             }
         }
         computeMotionVectors();
+        computeErrorBlocks();
+        saveErrorImage();
         printMotionVectors();
     }
 
@@ -113,8 +118,7 @@ public class BlockMotionCompensation{
     private void findBestMatchBlock(MacroBlock targetBlock, MImage refImg, int p){
         double minMSD = Double.MAX_VALUE;
         MacroBlock bestMatch = new MacroBlock();
-        int dx = 0;
-        int dy = 0;
+
         for(int row = (-1 * p); row <= p; row++){
             for(int col = (-1 * p); col <= p; col++){
                 int newRow = targetBlock.getRow() + row;
@@ -126,8 +130,6 @@ public class BlockMotionCompensation{
                 if(tempMSD <= minMSD){
                     minMSD = tempMSD;
                     bestMatch = refBlock;
-                    dx = col;
-                    dy = row;
                 }  
             }
         }
@@ -142,7 +144,7 @@ public class BlockMotionCompensation{
             for(int col = 0; col < this.n; col++){
                 int tGray = target.getGrayValue(row, col);
                 int rGray = ref.getGrayValue(row, col);
-                msd += Math.pow(tGray - rGray, 2);
+                msd += Math.pow(rGray - tGray, 2);
             }
         }
 
@@ -168,6 +170,68 @@ public class BlockMotionCompensation{
 
             }
         }
+    }
+
+    private void computeErrorBlocks(){
+
+        for(int row = 0; row < this.macroBlocks.length; row++){
+            for(int col = 0; col < this.macroBlocks[row].length; col++){
+
+                MacroBlock block = this.macroBlocks[row][col];
+
+                for(int blockRow = 0; blockRow < this.n; blockRow++){
+                    for(int blockCol = 0; blockCol < this.n; blockCol++){
+
+                        int targetVal = block.getGrayValue(blockRow, blockCol);
+                        int bestVal = block.getBestMatchBlock().getGrayValue(blockRow, blockCol);
+
+                        int result = Math.abs(targetVal - bestVal);
+                        System.out.print(result + " ");
+                        if(result > this.max){
+                            this.max = result;
+                        }
+                        if(result < this.min){
+                            this.min = result;
+                        }
+                        // System.out.println(result);
+                        block.setErrorBlock(blockRow, blockCol, result);
+                    }
+                    System.out.println();
+                }
+
+            }
+        }
+
+    }
+
+    private void saveErrorImage(){
+
+        MImage errorImage = new MImage(this.targetImg.getW(), this.targetImg.getH());
+        System.out.println("MIN: " + this.min);
+        System.out.println("MAX: " + this.max);
+
+        for(int imgRow = 0, blockRow = 0; imgRow < this.targetImg.getH(); imgRow += this.n, blockRow++){
+            for(int imgCol = 0, blockCol = 0; imgCol < this.targetImg.getW(); imgCol += this.n, blockCol++){
+                MacroBlock block = this.macroBlocks[blockRow][blockCol];
+
+                for(int errRow = imgRow, row = 0; row < this.n; errRow++, row++){
+                    for(int errCol = imgCol, col = 0; col < this.n; errCol++, col++){
+
+                        double error = block.getErrorBlock(row, col) * 1.0;
+
+                        // System.out.println(error);
+                        int scaledError = (int) (((error - this.min) / (this.max - this.min)) * 255.0);
+                        System.out.println("Scaled error: " + scaledError);
+                        int[] rgb = {scaledError, scaledError, scaledError};
+                        // int[] rgb = {0, 0, 0};
+                        errorImage.setPixel(errCol, errRow, rgb);
+
+                    }
+                }
+
+            }
+        }
+        errorImage.write2PPM("test1.ppm");
     }
 
     private void printMotionVectors(){

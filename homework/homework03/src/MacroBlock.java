@@ -8,7 +8,7 @@ public class MacroBlock{
 
     private int[][][] rgbs;   
     private int[][] grayValues;
-
+    private int[][] errorBlocks;
     private MacroBlock bestMatchBlock;
     private int[] motionVectors; 
 
@@ -24,6 +24,7 @@ public class MacroBlock{
 
         this.rgbs = new int[n][n][3];
         this.grayValues = new int[n][n];
+        this.errorBlocks = new int[n][n];
     }
 
     /* GETTERS AND SETTERS */
@@ -34,6 +35,14 @@ public class MacroBlock{
 
     public int[] getPixel(int row, int col){
         return this.rgbs[row][col];
+    }
+
+    public void setErrorBlock(int row, int col, int errVal){
+        this.errorBlocks[row][col] = errVal;
+    }
+
+    public int getErrorBlock(int row, int col){
+        return this.errorBlocks[row][col];
     }
 
     public void setGrayValue(int row, int col, int value){
