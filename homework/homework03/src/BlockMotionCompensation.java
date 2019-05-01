@@ -1,3 +1,6 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 public class BlockMotionCompensation{
 
@@ -59,6 +62,7 @@ public class BlockMotionCompensation{
 
     public void motionCompensation(){
         createMacroBlocks();
+        // finding best match block for all macro blocks
         for(int row = 0; row < this.macroBlocks.length; row++){
             for(int col = 0; col < this.macroBlocks[row].length; col++){
                 findBestMatchBlock(this.macroBlocks[row][col], this.refImg, this.p);
@@ -67,7 +71,7 @@ public class BlockMotionCompensation{
         computeMotionVectors();
         computeErrorBlocks();
         saveErrorImage();
-        printMotionVectors();
+        writeToTxt();
     }
 
     private void createMacroBlocks(){
@@ -186,7 +190,6 @@ public class BlockMotionCompensation{
                         int bestVal = block.getBestMatchBlock().getGrayValue(blockRow, blockCol);
 
                         int result = Math.abs(targetVal - bestVal);
-                        System.out.print(result + " ");
                         if(result > this.max){
                             this.max = result;
                         }
@@ -196,7 +199,6 @@ public class BlockMotionCompensation{
                         // System.out.println(result);
                         block.setErrorBlock(blockRow, blockCol, result);
                     }
-                    System.out.println();
                 }
 
             }
@@ -219,11 +221,8 @@ public class BlockMotionCompensation{
 
                         double error = block.getErrorBlock(row, col) * 1.0;
 
-                        // System.out.println(error);
                         int scaledError = (int) (((error - this.min) / (this.max - this.min)) * 255.0);
-                        System.out.println("Scaled error: " + scaledError);
                         int[] rgb = {scaledError, scaledError, scaledError};
-                        // int[] rgb = {0, 0, 0};
                         errorImage.setPixel(errCol, errRow, rgb);
 
                     }
@@ -231,7 +230,41 @@ public class BlockMotionCompensation{
 
             }
         }
-        errorImage.write2PPM("test1.ppm");
+        String fileName = this.targetImg.getName().substring(this.targetImg.getName().indexOf("/") + 1);
+
+        errorImage.write2PPM("err_" + fileName);
+    }
+
+    private void writeToTxt(){
+        String header = String.format("# Name: Alex Rodriguez\n" +
+                                        "# Target image name: %s\n" +
+                                        "# Reference image name: %s\n" +
+                                        "# Number of target macro blocks: %d x %d (image size is %d x %d)\n\n", this.targetImg.getName(), this.refImg.getName(), this.macroBlocks[0].length, this.macroBlocks.length, this.targetImg.getW(), this.targetImg.getH());  
+        StringBuilder builder = new StringBuilder(header);
+        for(int row = 0; row < this.macroBlocks.length; row++){
+            for(int col = 0; col < this.macroBlocks[row].length; col++){
+                MacroBlock block = this.macroBlocks[row][col];
+                int[] mv = block.getMotionVectors();
+                String result = "[ " + mv[0] + " , " + mv[1] + " ]\t";
+                builder.append(result);
+            }
+            builder.append("\n");
+        }
+
+        System.out.println("\n" + builder.toString());
+        PrintWriter writer = null;
+        try{
+            writer = new PrintWriter("mv.txt", "UTF-8");
+            writer.println(builder.toString());
+
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }catch(UnsupportedEncodingException e){
+            e.printStackTrace();
+        }finally{
+            writer.close();
+        }
+
     }
 
     private void printMotionVectors(){
