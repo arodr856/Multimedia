@@ -37,7 +37,8 @@ public class Menu{
                 bmc.motionCompensation();
                 break; 
             case 2:
-
+                BlockMotionCompensation bmc2 = new BlockMotionCompensation(getObjRemovalArgs());
+                bmc2.removeMovingObj();
                 break;
             case 3:
                 
@@ -61,6 +62,23 @@ public class Menu{
 
         System.out.print("Enter number for target image: ");
         args[3] = scanner.nextInt();
+
+        return args;
+    }
+
+    private int[] getObjRemovalArgs(){
+        int[] args = new int[4];
+
+        System.out.print("Enter n: ");
+        args[0] = scanner.nextInt();
+        
+        System.out.print("Enter p: ");
+        args[1] = scanner.nextInt();
+
+        System.out.print("Enter number for target image: ");
+        args[3] = scanner.nextInt();
+
+        args[2] = args[3] - 2;
 
         return args;
     }

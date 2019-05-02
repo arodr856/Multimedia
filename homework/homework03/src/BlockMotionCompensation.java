@@ -20,6 +20,7 @@ public class BlockMotionCompensation{
     
 
     private MacroBlock[][] macroBlocks;
+    private MacroBlock[][] replacedBlocks;
 
     // LOCATION OF VIDEO FRAMES
     // FRAMES_DIRECTORY directory should be in the same directory as the java files
@@ -41,6 +42,7 @@ public class BlockMotionCompensation{
         this.macroBlockCols = this.targetImg.getW() / this.n;
 
         this.macroBlocks = new MacroBlock[this.macroBlockRows][this.macroBlockCols];
+        this.replacedBlocks = new MacroBlock[this.macroBlockRows][this.macroBlockCols];
 
     }
 
@@ -131,10 +133,10 @@ public class BlockMotionCompensation{
                 
                 double tempMSD = computeMSD(targetBlock, refBlock);
 
-                if(tempMSD <= minMSD){
+                if(tempMSD < minMSD){
                     minMSD = tempMSD;
                     bestMatch = refBlock;
-                }  
+                }
             }
         }
         targetBlock.setBestMatchBlock(bestMatch);
@@ -148,7 +150,7 @@ public class BlockMotionCompensation{
             for(int col = 0; col < this.n; col++){
                 int tGray = target.getGrayValue(row, col);
                 int rGray = ref.getGrayValue(row, col);
-                msd += Math.pow(rGray - tGray, 2);
+                msd += Math.pow(tGray - rGray, 2);
             }
         }
 
@@ -279,4 +281,70 @@ public class BlockMotionCompensation{
         }
     }
 
+    public void removeMovingObj(){
+        removeObj();
+    }
+
+    private void removeObj(){
+        createMacroBlocks();
+        // finding best match block for all macro blocks
+        for(int row = 0; row < this.macroBlocks.length; row++){
+            for(int col = 0; col < this.macroBlocks[row].length; col++){
+                findBestMatchBlock(this.macroBlocks[row][col], this.refImg, this.p);
+            }
+        }
+        computeMotionVectors();
+        replaceDynamicBlocks();
+        saveRemovedObjImg();
+    }
+
+    private void replaceDynamicBlocks(){
+
+        MImage fifth = new MImage("IDB/Walk_005.ppm");
+
+        for(int row = 0; row < this.macroBlocks.length; row++){
+            for(int col = 0; col < this.macroBlocks[row].length; col++){
+
+
+                MacroBlock block = this.macroBlocks[row][col];
+
+                if(block.getMotionVectors()[0] != 0 || block.getMotionVectors()[1] != 0){
+                    MacroBlock ref = createRefImgMacroBlock(block.getRow(), block.getCol(),this.n, fifth);
+                    this.replacedBlocks[row][col] = ref;
+                    
+                }else{
+                    this.replacedBlocks[row][col] = block;
+                } 
+
+
+            }
+        }
+
+    }
+
+    private void saveRemovedObjImg(){
+        MImage errorImage = new MImage(this.targetImg.getW(), this.targetImg.getH());
+        System.out.println("MIN: " + this.min);
+        System.out.println("MAX: " + this.max);
+
+        for(int imgRow = 0, blockRow = 0; imgRow < this.targetImg.getH(); imgRow += this.n, blockRow++){
+            for(int imgCol = 0, blockCol = 0; imgCol < this.targetImg.getW(); imgCol += this.n, blockCol++){
+                MacroBlock block = this.replacedBlocks[blockRow][blockCol];
+
+                for(int errRow = imgRow, row = 0; row < this.n; errRow++, row++){
+                    for(int errCol = imgCol, col = 0; col < this.n; errCol++, col++){
+
+                        int[] rgb = block.getPixel(row, col);
+
+                        errorImage.setPixel(errCol, errRow, rgb);
+
+                    }
+                }
+
+            }
+        }
+        String fileName = this.targetImg.getName().substring(this.targetImg.getName().indexOf("/") + 1);
+
+        errorImage.write2PPM("obj_remove_" + fileName);
+    }
 }
