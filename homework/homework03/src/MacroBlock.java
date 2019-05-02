@@ -8,7 +8,7 @@ public class MacroBlock{
 
     private int[][][] rgbs;   
     private int[][] grayValues;
-    private int[][] errorBlocks;
+    private double[][] errorBlocks;
     private MacroBlock bestMatchBlock;
     private int[] motionVectors; 
 
@@ -24,7 +24,7 @@ public class MacroBlock{
 
         this.rgbs = new int[n][n][3];
         this.grayValues = new int[n][n];
-        this.errorBlocks = new int[n][n];
+        this.errorBlocks = new double[n][n];
     }
 
     /* GETTERS AND SETTERS */
@@ -37,11 +37,11 @@ public class MacroBlock{
         return this.rgbs[row][col];
     }
 
-    public void setErrorBlock(int row, int col, int errVal){
+    public void setErrorBlock(int row, int col, double errVal){
         this.errorBlocks[row][col] = errVal;
     }
 
-    public int getErrorBlock(int row, int col){
+    public double getErrorBlock(int row, int col){
         return this.errorBlocks[row][col];
     }
 
