@@ -11,6 +11,7 @@ public class MacroBlock{
     private double[][] errorBlocks;
     private MacroBlock bestMatchBlock;
     private int[] motionVectors; 
+    boolean isDynamic;
 
     public MacroBlock(){
 
@@ -66,6 +67,11 @@ public class MacroBlock{
     }
 
     public void setMotionVectors(int[] motionVectors) {
+        if(motionVectors[0] != 0 || motionVectors[1] != 0){
+            isDynamic = true;
+        }else{
+            isDynamic = false;
+        }
         this.motionVectors = motionVectors;
     }
 

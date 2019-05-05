@@ -363,7 +363,7 @@ public class BlockMotionCompensation{
     private void saveRemovedObjImgs(){
         MImage removedClosest = new MImage(this.targetImg.getW(), this.targetImg.getH());
         MImage removed2 = new MImage(this.targetImg.getW(), this.targetImg.getH());
-        
+        MImage redBlocks = new MImage(this.targetImg.getW(), this.targetImg.getH());
         System.out.println("MIN: " + this.min);
         System.out.println("MAX: " + this.max);
 
@@ -371,11 +371,24 @@ public class BlockMotionCompensation{
             for(int imgCol = 0, blockCol = 0; imgCol < this.targetImg.getW(); imgCol += this.n, blockCol++){
                 MacroBlock block = this.replacedBlocks[blockRow][blockCol];
                 MacroBlock block2 = this.replacedWithClosest[blockRow][blockCol];
+                MacroBlock orig = this.macroBlocks[blockRow][blockCol];
                 for(int errRow = imgRow, row = 0; row < this.n; errRow++, row++){
                     for(int errCol = imgCol, col = 0; col < this.n; errCol++, col++){
 
                         int[] rgb = block.getPixel(row, col);
                         int[] rgb2 = block2.getPixel(row, col);
+                        int[] rgb3 = orig.getPixel(row, col);
+
+                        if(orig.isDynamic){
+                            if(row == 0 || col == 0 || row == this.n - 1 || col == this.n - 1){
+                                rgb3[0] = 255;
+                                redBlocks.setPixel(errCol, errRow, rgb3);
+                            }else{
+                                redBlocks.setPixel(errCol, errRow, rgb3);
+                            }
+                        }else{
+                            redBlocks.setPixel(errCol, errRow, rgb3);
+                        }
 
                         removedClosest.setPixel(errCol, errRow, rgb2);
                         removed2.setPixel(errCol, errRow, rgb);
@@ -386,8 +399,10 @@ public class BlockMotionCompensation{
             }
         }
         String fileName = this.targetImg.getName().substring(this.targetImg.getName().indexOf("/") + 1);
+        redBlocks.write2PPM("red_blocks_" + fileName);
         removedClosest.write2PPM("obj_remove_1_" + fileName);
         removed2.write2PPM("obj_remove_2_" + fileName);
     }
+
 
 }
